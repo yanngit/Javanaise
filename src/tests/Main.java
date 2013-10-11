@@ -17,9 +17,16 @@ public class Main {
 			Thread.sleep(5000);
 			System.out.println(jvnO.getString());
 			jvnO.setString("coucou, main 1 j'ai tout modifié :)");
-			Thread.sleep(5000);
 			System.out.println(jvnO.getString());
+			Thread.sleep(1000);
 			List<String> list = server.getLookupNames();
+			for(String s : list){
+				System.out.println(s);
+			}
+			MonObjetInterface objet1 = (MonObjetInterface) JvnServerImpl.jvnGetServer().jvnLookupObject("objet1");
+			System.out.println("lookup ok");
+			server.jvnRemoveObject(objet1);
+			 list = server.getLookupNames();
 			for(String s : list){
 				System.out.println(s);
 			}

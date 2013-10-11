@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class JvnCoordImpl extends UnicastRemoteObject implements
 JvnRemoteCoord, JvnLocalCoord {
@@ -31,7 +32,7 @@ JvnRemoteCoord, JvnLocalCoord {
 	 * 
 	 */
 	private static final long serialVersionUID = -1164487591124280323L;
-	private Map<Integer, JvnRemoteServer> id_server = new HashMap<Integer, JvnRemoteServer>();
+	private Map<Integer, JvnRemoteServer> id_server = new ConcurrentHashMap<Integer, JvnRemoteServer>();
 	private Map<String, Integer> name_objectid = new HashMap<String, Integer>();
 	private List<JvnSharedObjectStructure> struct_list = new ArrayList<JvnSharedObjectStructure>();
 	private Map<Integer, JvnObject> id_object = new HashMap<Integer, JvnObject>();
@@ -418,13 +419,26 @@ JvnRemoteCoord, JvnLocalCoord {
 			}
 		}
 		name_objectid.remove(name);
-		/*Broadcast d'un message de suppression d'objet*/
-		for(Entry<Integer,JvnRemoteServer> entry : id_server.entrySet()){
-			entry.getValue().broadcastDeletedObject(new Integer(joi));
-		}
 		struct_list.remove(getStruct(joi));
+		/*Broadcast d'un message de suppression d'objet*/
+		List<Integer> list_disconnected = new ArrayList<>();
+		for(Entry<Integer,JvnRemoteServer> entry : id_server.entrySet()){
+			try{
+				entry.getValue().broadcastDeletedObject(new Integer(joi));
+			} catch (RemoteException e) {
+				/*
+				 * Le client distant n'est plus disponible, on le supprime et on
+				 * renvoie la dernière valeur connu pour l'objet
+				 */
+				list_disconnected.add(entry.getKey());
+			}
+		}
+		/*Suppression apres pour cause de problèmes d'accès concurrent*/
+		for(Integer i : list_disconnected){
+			deleteClient(i);
+		}
 	}
-	
+
 	@Override
 	public List<String> getLookupNames() throws RemoteException, JvnException {
 		List<String> res = new ArrayList<>();

@@ -146,7 +146,7 @@ JvnLocalServer, JvnRemoteServer {
 				proxy_intercepteur.put(obj, proxy);
 				return proxy;
 			}
-			return null;
+			return new JvnException("Aucun objet ne correspond à ce nom symbolique "+jon);
 		} catch (RemoteException e) {
 			throw new JvnException("Problème dans le LookupObject : "+e.getMessage());
 		}
