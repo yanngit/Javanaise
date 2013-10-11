@@ -1,5 +1,7 @@
 package tests;
 
+import java.util.List;
+
 import jvn.JvnException;
 import jvn.JvnServerImpl;
 
@@ -17,6 +19,10 @@ public class Main {
 			jvnO.setString("coucou, main 1 j'ai tout modifié :)");
 			Thread.sleep(5000);
 			System.out.println(jvnO.getString());
+			List<String> list = server.getLookupNames();
+			for(String s : list){
+				System.out.println(s);
+			}
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

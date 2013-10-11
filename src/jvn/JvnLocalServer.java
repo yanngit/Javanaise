@@ -50,8 +50,8 @@ public interface JvnLocalServer {
 	 * @return the current JVN object state
 	 * @throws  JvnException
 	 **/
-	public Serializable jvnLockRead(int joi)
-			throws JvnException;
+	//public Serializable jvnLockRead(int joi)
+			//throws JvnException;
 
 	/**
 	 * Get a Write lock on a JVN object 
@@ -70,6 +70,11 @@ public interface JvnLocalServer {
 	public  void jvnTerminate()
 			throws jvn.JvnException; 
 	
+	/**
+	 * Remove an object from the Jvn system (created and registered before)
+	 * @param oj : the object to remove
+	 * @throws JvnException
+	 */
 	public void jvnRemoveObject(Object oj) throws JvnException;
 
 }

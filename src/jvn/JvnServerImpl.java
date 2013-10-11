@@ -14,6 +14,7 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -76,8 +77,7 @@ JvnLocalServer, JvnRemoteServer {
 		try {
 			coordinator.jvnTerminate(this);
 		} catch (RemoteException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new JvnException("Problème dans le jvnTerminate : "+e.getMessage());
 		}
 	}
 
@@ -97,10 +97,8 @@ JvnLocalServer, JvnRemoteServer {
 			proxy_intercepteur.put(obj,proxy);
 			return proxy;
 		} catch (RemoteException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new JvnException("Problème dans le CreateObject : "+e.getMessage());
 		}
-		return null;
 	}
 
 	/**
@@ -126,8 +124,7 @@ JvnLocalServer, JvnRemoteServer {
 				throw new JvnException("L'objet ne peut pas etre enregistré car il n'est pas connu du serveur local ...");
 			}
 		} catch (RemoteException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new JvnException("Problème dans le RegisterObject : "+e.getMessage());
 		}
 	}
 
@@ -151,10 +148,8 @@ JvnLocalServer, JvnRemoteServer {
 			}
 			return null;
 		} catch (RemoteException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new JvnException("Problème dans le LookupObject : "+e.getMessage());
 		}
-		return null;
 	}
 
 	/**
@@ -175,9 +170,7 @@ JvnLocalServer, JvnRemoteServer {
 				throw new JvnException("Impossible de verouiller cet objet, il n'est pas connu du serveur");
 			}
 		} catch (RemoteException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return null;
+			throw new JvnException("Problème dans le LockRead : "+e.getMessage());
 		}
 
 	}
@@ -199,9 +192,7 @@ JvnLocalServer, JvnRemoteServer {
 				throw new JvnException("Impossible de verouiller cet objet, il n'est pas connu du serveur");
 			}	
 		} catch (RemoteException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return null;
+			throw new JvnException("Problème dans le LockWrite : "+e.getMessage());
 		}
 	}
 
@@ -248,9 +239,10 @@ JvnLocalServer, JvnRemoteServer {
 		return idobj_intercepteur.get(joi).jvnInvalidateWriterForReader();
 	}
 
-	public int jvnGetId() throws RemoteException {
+	public int jvnGetId() {
 		return id;
-	};
+	}
+
 	public Serializable recharge(int joi) throws JvnException{
 		System.out.println("rechager l'objet "+joi);
 		try {
@@ -258,22 +250,19 @@ JvnLocalServer, JvnRemoteServer {
 			System.out.println("until here is good");
 			return coordinator.recharge(this, joi);
 		} catch (RemoteException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return null;
-
-	}
-
-	public void refresh(JvnObject jo) {
-		try {
-			this.idobj_intercepteur.get(jo.jvnGetObjectId());
-		} catch (JvnException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new JvnException("Problème dans le recharge : "+e.getMessage());
 		}
 	}
 
+	public void refresh(JvnObject jo) throws JvnException {
+		this.idobj_intercepteur.get(jo.jvnGetObjectId());
+	}
+
+	/**
+	 * Remove an object from the Jvn system (created and registered before)
+	 * @param oj : the object to remove
+	 * @throws JvnException
+	 */
 	public void jvnRemoveObject(Object jo) throws JvnException{
 		/*Quand on demande une suppression on doit avoir un lock write*/
 		try {
@@ -290,8 +279,7 @@ JvnLocalServer, JvnRemoteServer {
 				throw new JvnException("Impossible de supprimer cet objet, il est inconnu du serveur local");
 			}
 		} catch (RemoteException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new JvnException("Problème dans le RemoveObject : "+e.getMessage());
 		}
 	}
 
@@ -302,6 +290,14 @@ JvnLocalServer, JvnRemoteServer {
 		if(obj != null){
 			proxy_intercepteur.remove(obj);
 			idobj_intercepteur.remove(integer);
+		}
+	}
+
+	public List<String> getLookupNames() throws JvnException {
+		try {
+			return coordinator.getLookupNames();
+		} catch (RemoteException e) {
+			throw new JvnException("Problème dans le LookupNames : "+e.getMessage());
 		}
 	}
 

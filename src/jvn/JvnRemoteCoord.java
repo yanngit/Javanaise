@@ -8,6 +8,7 @@
 package jvn;
 
 import java.rmi.*;
+import java.util.List;
 import java.io.*;
 
 
@@ -25,7 +26,12 @@ public interface JvnRemoteCoord extends Remote {
 	public int jvnGetObjectId()
 			throws java.rmi.RemoteException,jvn.JvnException; 
 	
-	
+	/**
+	 * Allocate a NEW JVN server id (usually allocated to a newly created JVNServerImp)
+	 *  
+	 * @throws java.rmi.RemoteException
+	 *             ,JvnException
+	 **/
 	public int jvnGetServerId() throws java.rmi.RemoteException, jvn.JvnException;
 	
 	/**
@@ -77,9 +83,8 @@ public interface JvnRemoteCoord extends Remote {
 			throws java.rmi.RemoteException, JvnException;
 	
 	/**
-	 * Remove a distributed object
+	 * Remove a specific distributed object
 	 * @param joi : the JVN object identification
-	 * @param js : the remote reference of the server
 	 * @throws java.rmi.RemoteException 
 	 * @throws JvnException
 	 */
@@ -87,7 +92,8 @@ public interface JvnRemoteCoord extends Remote {
 
 	public Serializable recharge(JvnRemoteServer js, Integer id) throws JvnException,
 			RemoteException;
-	
+	public List<String> getLookupNames() throws RemoteException, JvnException;
+
 }
 
 

@@ -64,6 +64,12 @@ JvnRemoteCoord, JvnLocalCoord {
 		return NEXT_ID;
 	}
 
+	/**
+	 * Allocate a NEW JVN server id (usually allocated to a newly created JVNServerImp)
+	 *  
+	 * @throws java.rmi.RemoteException
+	 *             ,JvnException
+	 **/
 	public synchronized int jvnGetServerId() throws RemoteException,
 	JvnException {
 		NEXT_ID_JVM++;
@@ -72,7 +78,6 @@ JvnRemoteCoord, JvnLocalCoord {
 
 	/**
 	 * Associate a symbolic name with a JVN object
-	 * 
 	 * @param jon
 	 *            : the JVN object name
 	 * @param jo
@@ -111,10 +116,13 @@ JvnRemoteCoord, JvnLocalCoord {
 		}
 	}
 
-	/*
-	 * Supprimer un client, donc tous ses locks dans la structure ainsi que
-	 * toutes les références de lui dans le coord
-	 */
+
+	/**
+	 * Delete all references about a JVNServer, used if the client terminate or shutdown 
+	 * without unlock.
+	 * @param id_jvm
+	 *            : the JvnServer identification
+	 **/
 	private void deleteClient(int id_jvm) {
 		for (JvnSharedObjectStructure str : struct_list) {
 			str.removeOwner(id_jvm);
@@ -123,6 +131,9 @@ JvnRemoteCoord, JvnLocalCoord {
 		jvnSaveCoordState();
 	}
 
+	/**
+	 * Make a backup of the JvnCoord state in a .ser file
+	 **/
 	public synchronized void jvnSaveCoordState() {
 		try {
 			FileOutputStream fichier = new FileOutputStream("coord.ser");
@@ -136,6 +147,9 @@ JvnRemoteCoord, JvnLocalCoord {
 		}
 	}
 
+	/**
+	 * Load a JvnCoord backup and replace the actual JvnCoord by the restored one.
+	 */
 	public synchronized void jvnRestoreCoordState() {
 		File f = new File("coord.ser");
 		if (f.exists()) {
@@ -161,10 +175,14 @@ JvnRemoteCoord, JvnLocalCoord {
 		}
 	}
 
-	/*
-	 * Sending a jvnInvalidateWriter message to a remote jvm for the id_obj
-	 * object
-	 */
+
+	/**
+	 * Send an invalidateWriter message to a remote JvnServer about a specific JvnObject	 
+	 * @param id_obj : the JVN object identification
+	 * @param id_jvm : the JvnServer identification
+	 * @return the current JVN object state 
+	 * @throws java.rmi.RemoteException,JvnException
+	 **/
 	public Serializable jvnInvalidateWriter(int id_obj, int id_jvm)
 			throws JvnException {
 		Serializable ser = null;
@@ -181,10 +199,13 @@ JvnRemoteCoord, JvnLocalCoord {
 		return ser;
 	}
 
-	/*
-	 * Sending a jvnInvalidateReader message to a remote jvm for the id_obj
-	 * object
-	 */
+
+	/**
+	 * Send an invalidateReader message to a remote JvnServer about a specific JvnObject	 
+	 * @param id_obj : the JVN object identification
+	 * @param id_jvm : the JvnServer identification
+	 * @throws java.rmi.RemoteException,JvnException
+	 **/
 	public void jvnInvalidateReader(int id_obj, int id_jvm) throws JvnException {
 		try {
 			id_server.get(id_jvm).jvnInvalidateReader(id_obj);
@@ -197,10 +218,14 @@ JvnRemoteCoord, JvnLocalCoord {
 		}
 	}
 
-	/*
-	 * Sending a jvnInvalidateWriterForReader message to a remote jvm for the
-	 * id_obj object
-	 */
+
+	/**
+	 * Send an invalidateWriterForReader message to a remote JvnServer about a specific JvnObject	 
+	 * @param id_obj : the JVN object identification
+	 * @param id_jvm : the JvnServer identification
+	 * @return the current JVN object state 
+	 * @throws java.rmi.RemoteException,JvnException
+	 **/
 	public Serializable jvnInvalidateWriterForReader(int id_obj, int id_jvm)
 			throws JvnException {
 		Serializable ser = null;
@@ -217,13 +242,18 @@ JvnRemoteCoord, JvnLocalCoord {
 		return ser;
 	}
 
+	/**
+	 * Get the JvnStruct representing a specific JvnObject	 
+	 * @param id : the JVN object identification
+	 * @return the JvnStruct associated 
+	 * @throws JvnException
+	 **/
 	private JvnSharedObjectStructure getStruct(Integer id) throws JvnException {
 		for (JvnSharedObjectStructure str : struct_list) {
 			if (str.getObjectId() == id.intValue()) {
 				return str;
 			}
 		}
-		/*123*/
 		throw new JvnException("Aucune structure pour l'objet [id=" + id
 				+ "] n'a été trouvé.");
 	}
@@ -367,12 +397,10 @@ JvnRemoteCoord, JvnLocalCoord {
 	}
 
 	/**
-	 * Remove a distributed object
+	 * Remove a specific distributed object
 	 * 
 	 * @param joi
 	 *            : the JVN object identification
-	 * @param js
-	 *            : the remote reference of the server
 	 * @throws java.rmi.RemoteException
 	 * @throws JvnException
 	 */
@@ -395,6 +423,14 @@ JvnRemoteCoord, JvnLocalCoord {
 			entry.getValue().broadcastDeletedObject(new Integer(joi));
 		}
 		struct_list.remove(getStruct(joi));
-
+	}
+	
+	@Override
+	public List<String> getLookupNames() throws RemoteException, JvnException {
+		List<String> res = new ArrayList<>();
+		for(Entry<String,Integer> entry : name_objectid.entrySet()){
+			res.add(entry.getKey());
+		}
+		return res;
 	}
 }

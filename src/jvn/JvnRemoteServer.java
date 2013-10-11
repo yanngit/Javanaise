@@ -7,8 +7,9 @@
 
 package jvn;
 
-import java.rmi.*;
-import java.io.*;
+import java.io.Serializable;
+import java.rmi.Remote;
+import java.rmi.RemoteException;
 
 
 /**
@@ -17,14 +18,14 @@ import java.io.*;
 
 public interface JvnRemoteServer extends Remote {
 	
-	public int jvnGetId() throws java.rmi.RemoteException;
+	public int jvnGetId() throws RemoteException;
 	/**
 	 * Invalidate the Read lock of a JVN object 
 	 * @param joi : the JVN object id
 	 * @throws java.rmi.RemoteException,JvnException
 	 **/
 	public void jvnInvalidateReader(int joi)
-			throws java.rmi.RemoteException,jvn.JvnException;
+			throws RemoteException,JvnException;
 
 	/**
 	 * Invalidate the Write lock of a JVN object 
@@ -33,7 +34,7 @@ public interface JvnRemoteServer extends Remote {
 	 * @throws java.rmi.RemoteException,JvnException
 	 **/
 	public Serializable jvnInvalidateWriter(int joi)
-			throws java.rmi.RemoteException,jvn.JvnException;
+			throws RemoteException,JvnException;
 
 	/**
 	 * Reduce the Write lock of a JVN object 
@@ -42,10 +43,9 @@ public interface JvnRemoteServer extends Remote {
 	 * @throws java.rmi.RemoteException,JvnException
 	 **/
 	public Serializable jvnInvalidateWriterForReader(int joi)
-			throws java.rmi.RemoteException,jvn.JvnException;
+			throws RemoteException,JvnException;
 	
-	public void broadcastDeletedObject(Integer integer) throws java.rmi.RemoteException, jvn.JvnException;
-
+	public void broadcastDeletedObject(Integer integer) throws RemoteException, JvnException;
 }
 
 
