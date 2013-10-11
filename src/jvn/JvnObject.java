@@ -77,4 +77,9 @@ public interface JvnObject extends Serializable {
 	 **/
 	public Serializable jvnInvalidateWriterForReader()
 			throws jvn.JvnException;	
+	public void jvnRemoveSer();
+	public boolean jvnIsCached();
+
+	public void jvnRemoveObject() throws JvnException;
+	
 }
