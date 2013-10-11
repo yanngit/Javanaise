@@ -1,10 +1,11 @@
 package irc;
 
-import jvn.JavanaiseAnnotation;
+import jvn.JavanaiseAnnotationRead;
+import jvn.JavanaiseAnnotationWrite;
 
 public interface SentenceInterface extends java.io.Serializable {
-	@JavanaiseAnnotation (lockType="write")
+	@JavanaiseAnnotationWrite
 	public void write(String text);
-	@JavanaiseAnnotation (lockType="read")
+	@JavanaiseAnnotationRead
 	public String read();
 }

@@ -2,13 +2,14 @@ package tests;
 
 import java.io.Serializable;
 
-import jvn.JavanaiseAnnotation;
+import jvn.JavanaiseAnnotationRead;
+import jvn.JavanaiseAnnotationWrite;
 
 
 
 public interface MonObjetInterface extends Serializable {
-	@JavanaiseAnnotation (lockType="write")
+	@JavanaiseAnnotationWrite
 	public void setString(String s);
-	@JavanaiseAnnotation (lockType="read")
+	@JavanaiseAnnotationRead
 	public String getString();	
 }

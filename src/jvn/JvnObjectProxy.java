@@ -23,23 +23,18 @@ public class JvnObjectProxy implements java.lang.reflect.InvocationHandler {
 		Object result = null;
 		boolean locked = false;
 		/*Verifier la présence d'annotation et faire le lock en fonction de l'annotation*/
-		if(m.isAnnotationPresent(JavanaiseAnnotation.class)){
-			JavanaiseAnnotation annot = m.getAnnotation(JavanaiseAnnotation.class);
-			if(annot.lockType().equals("write")){
-				ser = obj.jvnLockWrite();
-				locked = true;
-			}
-			else if(annot.lockType().equals("read")){
-				ser = obj.jvnLockRead();
-				locked = true;
-			}
-			else{
-				throw new JvnException("Problème d'annotation, valeur différente de read/write trouvée");
-			}
-			result = m.invoke(ser, args);
-			if(locked){
-				obj.jvnUnLock();
-			}
+		if(m.isAnnotationPresent(JavanaiseAnnotationWrite.class)) {
+			ser = obj.jvnLockWrite();
+			locked = true;
+		}
+		else if(m.isAnnotationPresent(JavanaiseAnnotationRead.class)) {
+			ser = obj.jvnLockRead();
+			locked = true;
+		}
+
+		result = m.invoke(ser, args);
+		if(locked){
+			obj.jvnUnLock();
 		}
 		return result;
 	}
