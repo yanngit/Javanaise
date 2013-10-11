@@ -39,6 +39,11 @@ public class MainCritical2 {
 			}
 			JvnServerImpl.jvnGetServer().jvnTerminate();
 			System.out.println("YES fin du test pour "+name);
+			Thread.sleep(5000);
+			JvnServerImpl.jvnGetServer().jvnRemoveObject(shared_object_2);
+			System.out.println("My object is remove");
+			JvnServerImpl.jvnGetServer().jvnTerminate();
+			System.out.println("JvnServer removed too");
 			System.exit(0);
 		} catch (JvnException e) {
 			// TODO Auto-generated catch block

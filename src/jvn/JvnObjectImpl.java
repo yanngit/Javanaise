@@ -225,8 +225,4 @@ public class JvnObjectImpl implements JvnObject {
 	public String toString(){
 		return Integer.toString(joi)+" "+((this.jvnIsCached())?"dans cache":"déchargé");
 	}
-	
-	public void jvnRemoveObject() throws JvnException{
-		/*TODO*/
-	}
 }

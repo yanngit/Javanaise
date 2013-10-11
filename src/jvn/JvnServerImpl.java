@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 public class JvnServerImpl extends UnicastRemoteObject implements
-		JvnLocalServer, JvnRemoteServer {
+JvnLocalServer, JvnRemoteServer {
 
 	/**
 	 * 
@@ -30,7 +30,9 @@ public class JvnServerImpl extends UnicastRemoteObject implements
 	private JvnRemoteCoord coordinator = null;
 	private Map<Integer, JvnObject> idobj_intercepteur = Collections
 			.synchronizedMap(new LruLinkedMap<Integer, JvnObject>(2));
-	private HashMap<JvnObject, Object> proxy_intercepteur = new HashMap<JvnObject, Object>();
+	/*Dans cet ordre car null pointeur lors du add sinon (car il fais un hash pour la clef qui est ici un proxy)*/
+	private HashMap <JvnObject, Object> proxy_intercepteur = new HashMap<JvnObject, Object>();
+
 	private String lookup_name;
 
 	/**
@@ -71,7 +73,12 @@ public class JvnServerImpl extends UnicastRemoteObject implements
 	 * @throws JvnException
 	 **/
 	public synchronized void jvnTerminate() throws jvn.JvnException {
-		// to be completed
+		try {
+			coordinator.jvnTerminate(this);
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -87,7 +94,7 @@ public class JvnServerImpl extends UnicastRemoteObject implements
 			idobj_intercepteur.put(new Integer(obj.jvnGetObjectId()), obj);
 			System.out.println(idobj_intercepteur);
 			Object proxy = JvnObjectProxy.newInstance(obj, o);
-			proxy_intercepteur.put(obj, proxy);
+			proxy_intercepteur.put(obj,proxy);
 			return proxy;
 		} catch (RemoteException e) {
 			// TODO Auto-generated catch block
@@ -108,12 +115,15 @@ public class JvnServerImpl extends UnicastRemoteObject implements
 	public void jvnRegisterObject(String jon, Object jo)
 			throws jvn.JvnException {
 		try {
-			for (Entry<JvnObject, Object> o : proxy_intercepteur.entrySet()) {
-				if (o.getValue() == jo) {
-					coordinator.jvnRegisterObject(jon, (JvnObject) o.getKey(),
-							this);
-
+			boolean done = false;
+			for(Entry<JvnObject,Object> entry : proxy_intercepteur.entrySet()){
+				if(entry.getValue() == jo){
+					coordinator.jvnRegisterObject(jon, entry.getKey(),this);
+					done = true;
 				}
+			}
+			if(!done){
+				throw new JvnException("L'objet ne peut pas etre enregistré car il n'est pas connu du serveur local ...");
 			}
 		} catch (RemoteException e) {
 			// TODO Auto-generated catch block
@@ -156,9 +166,14 @@ public class JvnServerImpl extends UnicastRemoteObject implements
 	 * @throws JvnException
 	 **/
 	public Serializable jvnLockRead(int joi) throws JvnException {
-		
+
 		try {
-			return coordinator.jvnLockRead(joi, this);
+			if(idobj_intercepteur.containsKey(new Integer(joi))){
+				return coordinator.jvnLockRead(joi, this);
+			}
+			else{
+				throw new JvnException("Impossible de verouiller cet objet, il n'est pas connu du serveur");
+			}
 		} catch (RemoteException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -177,7 +192,12 @@ public class JvnServerImpl extends UnicastRemoteObject implements
 	 **/
 	public Serializable jvnLockWrite(int joi) throws JvnException {
 		try {
-			return coordinator.jvnLockWrite(joi, this);
+			if(idobj_intercepteur.containsKey(new Integer(joi))){
+				return coordinator.jvnLockWrite(joi, this);
+			}
+			else{
+				throw new JvnException("Impossible de verouiller cet objet, il n'est pas connu du serveur");
+			}	
 		} catch (RemoteException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -196,7 +216,7 @@ public class JvnServerImpl extends UnicastRemoteObject implements
 	 *             ,JvnException
 	 **/
 	public void jvnInvalidateReader(int joi) throws java.rmi.RemoteException,
-			jvn.JvnException {
+	jvn.JvnException {
 		idobj_intercepteur.get(joi).jvnInvalidateReader();
 	};
 
@@ -234,24 +254,55 @@ public class JvnServerImpl extends UnicastRemoteObject implements
 	public Serializable recharge(int joi) throws JvnException{
 		System.out.println("rechager l'objet "+joi);
 		try {
-				this.refresh(idobj_intercepteur.get(joi));
-				System.out.println("until here is good");
-				return coordinator.recharge(this, joi);
-			} catch (RemoteException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			return null;
-		
+			this.refresh(idobj_intercepteur.get(joi));
+			System.out.println("until here is good");
+			return coordinator.recharge(this, joi);
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+
 	}
 
 	public void refresh(JvnObject jo) {
-	try {
-		this.idobj_intercepteur.get(jo.jvnGetObjectId());
-	} catch (JvnException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
+		try {
+			this.idobj_intercepteur.get(jo.jvnGetObjectId());
+		} catch (JvnException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
+
+	public void jvnRemoveObject(Object jo) throws JvnException{
+		/*Quand on demande une suppression on doit avoir un lock write*/
+		try {
+			int id = -1;
+			for(Entry<JvnObject,Object> entry : proxy_intercepteur.entrySet()){
+				if(entry.getValue() == jo){
+					id =  entry.getKey().jvnGetObjectId();
+				}
+			}
+			if(id > 0){
+				coordinator.jvnRemoveObject(id);
+			}
+			else {
+				throw new JvnException("Impossible de supprimer cet objet, il est inconnu du serveur local");
+			}
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public void broadcastDeletedObject(Integer integer) {
+		JvnObject obj = idobj_intercepteur.get(integer);
+		/*Si l'objet était connu du serveur on le supprime sinon rien*/
+		if(obj != null){
+			proxy_intercepteur.remove(obj);
+			idobj_intercepteur.remove(integer);
+		}
 	}
 
 }

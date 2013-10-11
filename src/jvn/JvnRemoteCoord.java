@@ -83,11 +83,11 @@ public interface JvnRemoteCoord extends Remote {
 	 * @throws java.rmi.RemoteException 
 	 * @throws JvnException
 	 */
-	public void jvnRemoveObject(int joi, JvnRemoteServer js) throws java.rmi.RemoteException, JvnException;
+	public void jvnRemoveObject(int joi) throws java.rmi.RemoteException, JvnException;
 
 	public Serializable recharge(JvnRemoteServer js, Integer id) throws JvnException,
 			RemoteException;
-
+	
 }
 
 

@@ -80,6 +80,5 @@ public interface JvnObject extends Serializable {
 	public void jvnRemoveSer();
 	public boolean jvnIsCached();
 
-	public void jvnRemoveObject() throws JvnException;
 	
 }

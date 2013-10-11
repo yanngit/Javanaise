@@ -70,6 +70,8 @@ public interface JvnLocalServer {
 	public  void jvnTerminate()
 			throws jvn.JvnException; 
 	
+	public void jvnRemoveObject(Object oj) throws JvnException;
+
 }
 
 

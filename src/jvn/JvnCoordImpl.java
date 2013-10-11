@@ -21,17 +21,20 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 public class JvnCoordImpl extends UnicastRemoteObject implements
-		JvnRemoteCoord, JvnLocalCoord {
+JvnRemoteCoord, JvnLocalCoord {
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = -1164487591124280323L;
-	private HashMap<Integer, JvnRemoteServer> id_server = new HashMap<Integer, JvnRemoteServer>();
-	private HashMap<String, Integer> name_objectid = new HashMap<String, Integer>();
-	private ArrayList<JvnSharedObjectStructure> struct_list = new ArrayList<JvnSharedObjectStructure>();
-	private HashMap<Integer, JvnObject> id_object = new HashMap<Integer, JvnObject>();
+	private Map<Integer, JvnRemoteServer> id_server = new HashMap<Integer, JvnRemoteServer>();
+	private Map<String, Integer> name_objectid = new HashMap<String, Integer>();
+	private List<JvnSharedObjectStructure> struct_list = new ArrayList<JvnSharedObjectStructure>();
+	private Map<Integer, JvnObject> id_object = new HashMap<Integer, JvnObject>();
 	private int NEXT_ID = 0;
 	private int NEXT_ID_JVM = 0;
 
@@ -44,7 +47,7 @@ public class JvnCoordImpl extends UnicastRemoteObject implements
 		LocateRegistry.createRegistry(5555);
 		Naming.rebind("//localhost:5555/coordinator", this);
 		System.out
-				.println("Coordinateur enregistré dans rmiregistry, pret à fonctionner");
+		.println("Coordinateur enregistré dans rmiregistry, pret à fonctionner");
 		jvnRestoreCoordState();
 	}
 
@@ -56,13 +59,13 @@ public class JvnCoordImpl extends UnicastRemoteObject implements
 	 *             ,JvnException
 	 **/
 	public synchronized int jvnGetObjectId() throws java.rmi.RemoteException,
-			jvn.JvnException {
+	jvn.JvnException {
 		NEXT_ID++;
 		return NEXT_ID;
 	}
 
 	public synchronized int jvnGetServerId() throws RemoteException,
-			JvnException {
+	JvnException {
 		NEXT_ID_JVM++;
 		return NEXT_ID_JVM;
 	}
@@ -274,33 +277,16 @@ public class JvnCoordImpl extends UnicastRemoteObject implements
 	 * @throws java.rmi.RemoteException
 	 *             , JvnException
 	 **/
-	public Serializable jvnLockRead(int joi, JvnRemoteServer js)
-			throws java.rmi.RemoteException, JvnException {
-		System.out.println("Coord dit : lock read demandé par " + js.jvnGetId()
-				+ " sur l'objet " + joi + "     " + System.currentTimeMillis());
+	public Serializable jvnLockRead(int joi, JvnRemoteServer js) throws java.rmi.RemoteException, JvnException {
 		JvnSharedObjectStructure str = getStruct(joi);
 		str.getLock();
 		if (str.hasWriter()) {
-			System.out.println("has writer par " + js.jvnGetId()
-					+ " sur l'objet " + joi + "     "
-					+ System.currentTimeMillis());
 			Serializable ser = str.invalidateWriterForReader(js.jvnGetId());
 			updateObject(joi, ser);
-			System.out.println("Coord dit : lock read demandé par "
-					+ js.jvnGetId() + " sur l'objet " + joi
-					+ " est TERmINEEEEEEEEEE" + "     "
-					+ System.currentTimeMillis());
 			str.releaseLock();
 			return ser;
 		} else {
-			System.out.println("nobody or reader par " + js.jvnGetId()
-					+ " sur l'objet " + joi + "     "
-					+ System.currentTimeMillis());
 			str.addReader(js.jvnGetId());
-			System.out.println("Coord dit : lock read demandé par "
-					+ js.jvnGetId() + " sur l'objet " + joi
-					+ " TERmINEEEEEEEEEE" + "     "
-					+ System.currentTimeMillis());
 			str.releaseLock();
 			return id_object.get(str.getObjectId()).jvnGetObjectState();
 		}
@@ -390,9 +376,25 @@ public class JvnCoordImpl extends UnicastRemoteObject implements
 	 * @throws java.rmi.RemoteException
 	 * @throws JvnException
 	 */
-	public void jvnRemoveObject(int joi, JvnRemoteServer js)
+	public void jvnRemoveObject(int joi)
 			throws RemoteException, JvnException {
+		/*Suppression des référence vers l'objet à supprimer*/
+		JvnSharedObjectStructure struct = getStruct(joi);
+		struct.getLock();
+		id_object.remove(new Integer(joi));
+		String name = null;
+		for(Entry<String,Integer> entry : name_objectid.entrySet()){
+			if(entry.getValue().intValue() == joi){
+				name = entry.getKey();
+				break;
+			}
+		}
+		name_objectid.remove(name);
+		/*Broadcast d'un message de suppression d'objet*/
+		for(Entry<Integer,JvnRemoteServer> entry : id_server.entrySet()){
+			entry.getValue().broadcastDeletedObject(new Integer(joi));
+		}
+		struct_list.remove(getStruct(joi));
 
 	}
-
 }
