@@ -16,6 +16,12 @@ public class JvnSharedObjectStructure implements Serializable {
 	private JvnLocalCoord coord;
 	private boolean locked = false;
 
+	/**
+	 * The class constructor
+	 * @param obj a jvnObject
+	 * @param id_jvm the id of the server
+	 * @param coord the coordinator
+	 */
 	public JvnSharedObjectStructure(JvnObject obj, int id_jvm, JvnLocalCoord coord){
 		try {
 			id_jvn_object = obj.jvnGetObjectId();
@@ -27,78 +33,97 @@ public class JvnSharedObjectStructure implements Serializable {
 		}
 	}
 
-	/*Obtenir un verrou sur la structure*/
+	/**
+	 * Get a lock on the structure
+	 */
 	public synchronized void getLock(){
-		System.out.println("GET LOCK ON "+id_jvn_object);
 		while(locked){
 			try {
-				System.out.println("GET LOCK WAITINBGGGGGG ON "+id_jvn_object);
 				this.wait();
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
-		System.out.println("LOCKED ON "+id_jvn_object);
 		locked = true;
 	}
 
-	/*Relacher le verrou de la structure*/
+	/**
+	 * Release a lock on the structure
+	 */
 	public synchronized void releaseLock(){
-		System.out.println("RELEASE LOCK ASKED ON "+id_jvn_object);
 		locked = false;
 		coord.jvnSaveCoordState();
 		this.notify();
 	}
 
 	/*Va invalider le(s) reader(s) pour un writer, sauf si le reader est le demandeur*/
+	/**
+	 * Invalidate all the reader of a shared object
+	 * 
+	 * @param id_jvm the id of the server
+	 * @throws JvnException
+	 */
 	public synchronized void invalidateReader(int id_jvm) throws JvnException{
 		if(reader_list.size() > 0){
 			for(Integer i : reader_list){
-				System.out.println("pour l'objet "+id_jvn_object+" j'invalide"+i.intValue()+"     "+System.currentTimeMillis());
 				if(i.intValue() != id_jvm){
-					System.out.println("pour l'objet "+id_jvn_object+" je vais vraiment invalider"+i.intValue()+"     "+System.currentTimeMillis());
 					coord.jvnInvalidateReader(id_jvn_object, i.intValue());
 				}
 			}
 			reader_list.clear();
 			writer = id_jvm;	
 		}
-		System.out.println("pour l'objet "+id_jvn_object+" j'invalide est terminé !!!"+System.currentTimeMillis()+"     "+System.currentTimeMillis());
 	}
 
 	/*Va invalider le writer pour un reader*/
+	/**
+	 * Invalidate the writer of a shared object to give the object to the readers
+	 * 
+	 * @param id_jvm the id of the server
+	 * @return the shared object
+	 * @throws JvnException
+	 */
 	public synchronized Serializable invalidateWriterForReader(int id_jvm) throws JvnException{
 		Serializable ser = null;
 		if(writer > 0){
-			System.out.println("pour l'objet "+id_jvn_object+" j'invalide le writer"+writer+"     "+System.currentTimeMillis());
 			ser = coord.jvnInvalidateWriterForReader(id_jvn_object, writer);
 			reader_list.add(new Integer(id_jvm));
 			writer = -1;
-			System.out.println("pour l'objet "+id_jvn_object+" j'invalide le writer"+writer+" est terminé !!!!"+"     "+System.currentTimeMillis());
 			return ser;
 		}
 		throw new JvnException("Impossible d'invalider writerForReader");
 	}
 
 	/*Va invalider le writer pour un writer*/
+
+	/**
+	 * Invalidate the writer on the shared object 
+	 * 
+	 * @param id_jvm the id of the server
+	 * @throws JvnException
+	 */
 	public synchronized Serializable invalidateWriter(int id_jvm) throws JvnException{
 		if(writer > 0){
-			System.out.println("pour l'objet "+id_jvn_object+" j'invalide le writer"+writer+" pour un writer"+id_jvm+"     "+System.currentTimeMillis());
 			Serializable ser = coord.jvnInvalidateWriter(id_jvn_object, writer);
 			writer = id_jvm;
-			System.out.println("pour l'objet "+id_jvn_object+" j'invalide le writer"+writer+" pour un writer"+id_jvm+" terminé !!!"+"     "+System.currentTimeMillis());
 			return ser;
 		}
 		throw new JvnException("Impossible d'invalider writer");
 	}
-
+	/**
+	 * Add a new owner to the list of the shared objects owners
+	 * @param id the identifier of the new owner
+	 */
 	public synchronized void addOwner(int id){
 		owner.add(new Integer(id));
 	}
 
+	/**
+	 * Delete  an owner the list of the shared objects owners
+	 * @param id the identifier of the new owner
+	 */
 	public synchronized void removeOwner(int id){
-		System.out.println("REMOVE OWWWNNNNEEERRRRR");
 		boolean exists = false;
 		for(Integer i : owner){
 			if(i.intValue() == id){
@@ -120,22 +145,45 @@ public class JvnSharedObjectStructure implements Serializable {
 		}
 	}
 
+	/**
+	 * Set the identifier of the writer
+	 * 
+	 * @param id the new identifier
+	 */
 	public synchronized void setWriter(Integer id){
 		writer = id;
 	}
 
+	/**
+	 * Test if there is a writer on the shared object
+	 *
+	 * @return true if there is a writer, false otherwise
+	 */
 	public synchronized boolean hasWriter(){
 		return writer.intValue() != -1;
 	}
 
+	/**
+	 * Add a reader to the list of readers
+	 * @param id the identifier of the new reader
+	 */
 	public synchronized void addReader(Integer id){
 		reader_list.add(id);
 	}
 
+	/**
+	 * Test if there is a reader on the shared object
+	 *
+	 * @return true if there is a reader, false otherwise
+	 */
 	public synchronized boolean hasReader(){
 		return !reader_list.isEmpty();
 	}
 
+	/**
+	 * Return the identifier of the shared object
+	 * @return identifier of the shared object
+	 */
 	public int getObjectId(){
 		return id_jvn_object;
 	}

@@ -18,7 +18,12 @@ import java.rmi.RemoteException;
 
 public interface JvnRemoteServer extends Remote {
 	
+	/**
+	 * Get the identifier of the server
+	 * @return the server identifier
+	 */
 	public int jvnGetId() throws RemoteException;
+	
 	/**
 	 * Invalidate the Read lock of a JVN object 
 	 * @param joi : the JVN object id
@@ -45,7 +50,13 @@ public interface JvnRemoteServer extends Remote {
 	public Serializable jvnInvalidateWriterForReader(int joi)
 			throws RemoteException,JvnException;
 	
-	public void broadcastDeletedObject(Integer integer) throws RemoteException, JvnException;
+	/**
+	 * Informing the server about a deleted object
+	 * @param integer the object identifier
+	 * @throws RemoteException
+	 * @throws JvnException
+	 */
+	public void jvnDeletedObjectInformation(Integer integer) throws RemoteException, JvnException;
 }
 
 

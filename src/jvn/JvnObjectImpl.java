@@ -23,12 +23,17 @@ public class JvnObjectImpl implements JvnObject {
 		this.obj = obj;
 	}
 
+
+	/**
+	 * Get a Read lock on the object 
+	 * @throws JvnException
+	 **/
 	public Serializable jvnLockRead() throws JvnException {
 		
 		boolean ask = false;
 		if (!this.jvnIsCached()) {
 			JvnServerImpl js=JvnServerImpl.jvnGetServer();
-			this.obj=js.recharge(this.joi);
+			this.obj=js.jvnRecharge(this.joi);
 		}
 		synchronized (this) {
 			System.out.println("lock read Etat courant :" + STATE
@@ -61,11 +66,15 @@ public class JvnObjectImpl implements JvnObject {
 		return obj;
 	}
 
+	/**
+	 * Get a Write lock on the object 
+	 * @throws JvnException
+	 **/
 	public Serializable jvnLockWrite() throws JvnException {
 		boolean ask = false;
 		if (!this.jvnIsCached()) {
 			JvnServerImpl js=JvnServerImpl.jvnGetServer();
-			this.obj=js.recharge(this.joi);
+			this.obj=js.jvnRecharge(this.joi);
 		}
 		synchronized (this) {
 			System.out.println("lock write Etat courant :" + STATE
@@ -96,11 +105,15 @@ public class JvnObjectImpl implements JvnObject {
 				+ System.currentTimeMillis());
 		return obj;
 	}
-
+	
+	/**
+	 * Unlock  the object 
+	 * @throws JvnException
+	 **/
 	public synchronized void jvnUnLock() throws JvnException {
 		if (!this.jvnIsCached()) {
 			JvnServerImpl js=JvnServerImpl.jvnGetServer();
-			js.recharge(this.joi);
+			js.jvnRecharge(this.joi);
 		}
 		System.out.println("unlock STATE : " + STATE + " waitforread : "
 				+ wait_for_read + " waitforwrite : " + wait_for_write + "     "
@@ -131,17 +144,29 @@ public class JvnObjectImpl implements JvnObject {
 				+ wait_for_read + " waitforwrite : " + wait_for_write
 				+ " finishhhhhhhh" + "     " + System.currentTimeMillis());
 		JvnServerImpl js = JvnServerImpl.jvnGetServer();
-		js.refresh(this);
+		js.jvnRefresh(this);
 	}
 
+	/**
+	 * Get the object identifier
+	 * @throws JvnException
+	 **/
 	public synchronized int jvnGetObjectId() throws JvnException {
 		return joi;
 	}
 
+	/**
+	 * Get the object state
+	 * @throws JvnException
+	 **/
 	public synchronized Serializable jvnGetObjectState() throws JvnException {
 		return obj;
 	}
-
+	
+	/**
+	 * Invalidate the Read lock of the JVN object 
+	 * @throws JvnException
+	 **/
 	public synchronized void jvnInvalidateReader() throws JvnException {
 		System.out.println("invalidate reader with state : " + STATE
 				+ " sur l'objet " + joi + "         "
@@ -163,6 +188,11 @@ public class JvnObjectImpl implements JvnObject {
 		}
 	}
 
+	/**
+	 * Invalidate the Write lock of the JVN object  
+	 * @return the current JVN object state
+	 * @throws JvnException
+	 **/
 	public synchronized Serializable jvnInvalidateWriter() throws JvnException {
 		System.out.println("invalidate writer with state : " + STATE
 				+ " sur l'objet " + joi + "         "
@@ -186,6 +216,11 @@ public class JvnObjectImpl implements JvnObject {
 		return obj;
 	}
 
+	/**
+	 * Reduce the Write lock of the JVN object 
+	 * @return the current JVN object state
+	 * @throws JvnException
+	 **/
 	public synchronized Serializable jvnInvalidateWriterForReader()
 			throws JvnException {
 		System.out.println("invalidate writerforreader with state : " + STATE
@@ -210,19 +245,31 @@ public class JvnObjectImpl implements JvnObject {
 		return obj;
 	}
 
+	/** Update the status of a given object
+	 * 
+	 * @ser:
+	 * 		  The new state of a shared object
+	 * 
+	 * @throws JvnException
+	 */
 	public void jvnUpdateObjectState(Serializable ser) throws JvnException {
 		this.obj = ser;
 	}
 
-	public void jvnRemoveSer() {
+	/** Unloading a shared object (to liberate a place in the cache)
+	 * 
+	 */
+	public void jvnUnloadObject() {
 		this.obj = null;
 	}
 
+	/** Test if the shared object is cached
+	 * 
+	 * @return true if the shared object is cached, false otherwise
+	 */
+	
 	public boolean jvnIsCached() {
 		return !(this.obj == null);
 	}
 
-	public String toString(){
-		return Integer.toString(joi)+" "+((this.jvnIsCached())?"dans cache":"déchargé");
-	}
 }

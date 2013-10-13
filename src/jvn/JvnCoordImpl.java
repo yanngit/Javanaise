@@ -47,8 +47,7 @@ JvnRemoteCoord, JvnLocalCoord {
 	private JvnCoordImpl() throws Exception {
 		LocateRegistry.createRegistry(5555);
 		Naming.rebind("//localhost:5555/coordinator", this);
-		System.out
-		.println("Coordinateur enregistré dans rmiregistry, pret à fonctionner");
+		System.out.println("Coordinateur enregistré dans rmiregistry, pret à fonctionner");
 		jvnRestoreCoordState();
 	}
 
@@ -84,7 +83,7 @@ JvnRemoteCoord, JvnLocalCoord {
 	 * @param jo
 	 *            : the JVN object
 	 * @param joi
-	 *            : the JVN object identification
+	 *            : the JVN object identifier
 	 * @param js
 	 *            : the remote reference of the JVNServer
 	 * @throws java.rmi.RemoteException
@@ -122,7 +121,7 @@ JvnRemoteCoord, JvnLocalCoord {
 	 * Delete all references about a JVNServer, used if the client terminate or shutdown 
 	 * without unlock.
 	 * @param id_jvm
-	 *            : the JvnServer identification
+	 *            : the JvnServer identifier
 	 **/
 	private void deleteClient(int id_jvm) {
 		for (JvnSharedObjectStructure str : struct_list) {
@@ -179,8 +178,8 @@ JvnRemoteCoord, JvnLocalCoord {
 
 	/**
 	 * Send an invalidateWriter message to a remote JvnServer about a specific JvnObject	 
-	 * @param id_obj : the JVN object identification
-	 * @param id_jvm : the JvnServer identification
+	 * @param id_obj : the JVN object identifier
+	 * @param id_jvm : the JvnServer identifier
 	 * @return the current JVN object state 
 	 * @throws java.rmi.RemoteException,JvnException
 	 **/
@@ -203,8 +202,8 @@ JvnRemoteCoord, JvnLocalCoord {
 
 	/**
 	 * Send an invalidateReader message to a remote JvnServer about a specific JvnObject	 
-	 * @param id_obj : the JVN object identification
-	 * @param id_jvm : the JvnServer identification
+	 * @param id_obj : the JVN object identifier
+	 * @param id_jvm : the JvnServer identifier
 	 * @throws java.rmi.RemoteException,JvnException
 	 **/
 	public void jvnInvalidateReader(int id_obj, int id_jvm) throws JvnException {
@@ -222,8 +221,8 @@ JvnRemoteCoord, JvnLocalCoord {
 
 	/**
 	 * Send an invalidateWriterForReader message to a remote JvnServer about a specific JvnObject	 
-	 * @param id_obj : the JVN object identification
-	 * @param id_jvm : the JvnServer identification
+	 * @param id_obj : the JVN object identifier
+	 * @param id_jvm : the JvnServer identifier
 	 * @return the current JVN object state 
 	 * @throws java.rmi.RemoteException,JvnException
 	 **/
@@ -245,7 +244,7 @@ JvnRemoteCoord, JvnLocalCoord {
 
 	/**
 	 * Get the JvnStruct representing a specific JvnObject	 
-	 * @param id : the JVN object identification
+	 * @param id : the JVN object identifier
 	 * @return the JvnStruct associated 
 	 * @throws JvnException
 	 **/
@@ -286,8 +285,15 @@ JvnRemoteCoord, JvnLocalCoord {
 		return null;
 	}
 
+	/** 
+	 * Get the shared object from the coordinator
+	 * 
+	 * @js the server asking the object
+	 * @id the shared object identifier 
+	 * @return the shared object state
+	 */
 	@Override
-	public Serializable recharge(JvnRemoteServer js, Integer id)
+	public Serializable jvnGetSharedObject(JvnRemoteServer js, Integer id)
 			throws JvnException, RemoteException {
 		if (id_object.containsKey(id)) {
 			JvnSharedObjectStructure o = getStruct(id);
@@ -301,7 +307,7 @@ JvnRemoteCoord, JvnLocalCoord {
 	 * Get a Read lock on a JVN object managed by a given JVN server
 	 * 
 	 * @param joi
-	 *            : the JVN object identification
+	 *            : the JVN object identifier
 	 * @param js
 	 *            : the remote reference of the server
 	 * @return the current JVN object state
@@ -331,7 +337,7 @@ JvnRemoteCoord, JvnLocalCoord {
 	 * Get a Write lock on a JVN object managed by a given JVN server
 	 * 
 	 * @param joi
-	 *            : the JVN object identification
+	 *            : the JVN object identifier
 	 * @param js
 	 *            : the remote reference of the server
 	 * @return the current JVN object state
@@ -340,37 +346,18 @@ JvnRemoteCoord, JvnLocalCoord {
 	 **/
 	public Serializable jvnLockWrite(int joi, JvnRemoteServer js)
 			throws java.rmi.RemoteException, JvnException {
-		System.out.println("Coord dit : lock write demandé par "
-				+ js.jvnGetId() + " sur l'objet " + joi + "     "
-				+ System.currentTimeMillis());
 		JvnSharedObjectStructure str = getStruct(joi);
 		str.getLock();
 		if (str.hasWriter()) {
-			System.out.println("has writer par " + js.jvnGetId()
-					+ " sur l'objet " + joi + "     "
-					+ System.currentTimeMillis());
 			Serializable ser = str.invalidateWriter(js.jvnGetId());
 			updateObject(joi, ser);
-			System.out.println("Coord dit : lock write demandé par "
-					+ js.jvnGetId() + " sur l'objet " + joi
-					+ " est TERMINEEEEEEEEEEEEE" + "     "
-					+ System.currentTimeMillis());
 			str.releaseLock();
 			return ser;
 		} else if (str.hasReader()) {
-			System.out.println("has reader par " + js.jvnGetId()
-					+ " sur l'objet " + joi + "     "
-					+ System.currentTimeMillis());
 			str.invalidateReader(js.jvnGetId());
 		} else {
-			System.out.println("nobody par " + js.jvnGetId() + " sur l'objet "
-					+ joi + "     " + System.currentTimeMillis());
 			str.setWriter(new Integer(js.jvnGetId()));
 		}
-		System.out.println("Coord dit : lock write demandé par "
-				+ js.jvnGetId() + " sur l'objet " + joi
-				+ " est TERMINEEEEEEEEEEEEE" + "     "
-				+ System.currentTimeMillis());
 		str.releaseLock();
 		return id_object.get(str.getObjectId()).jvnGetObjectState();
 	}
@@ -388,6 +375,10 @@ JvnRemoteCoord, JvnLocalCoord {
 		deleteClient(js.jvnGetId());
 	}
 
+	/**
+	 * Launching the coordinator
+	 * @param args 
+	 */
 	public static void main(String[] args) {
 		try {
 			new JvnCoordImpl();
@@ -401,7 +392,7 @@ JvnRemoteCoord, JvnLocalCoord {
 	 * Remove a specific distributed object
 	 * 
 	 * @param joi
-	 *            : the JVN object identification
+	 *            : the JVN object identifier
 	 * @throws java.rmi.RemoteException
 	 * @throws JvnException
 	 */
@@ -424,7 +415,7 @@ JvnRemoteCoord, JvnLocalCoord {
 		List<Integer> list_disconnected = new ArrayList<>();
 		for(Entry<Integer,JvnRemoteServer> entry : id_server.entrySet()){
 			try{
-				entry.getValue().broadcastDeletedObject(new Integer(joi));
+				entry.getValue().jvnDeletedObjectInformation(new Integer(joi));
 			} catch (RemoteException e) {
 				/*
 				 * Le client distant n'est plus disponible, on le supprime et on
@@ -440,6 +431,13 @@ JvnRemoteCoord, JvnLocalCoord {
 	}
 
 	@Override
+	/** Get the Names of all shared objects 
+	 *
+	 * @return a list of shared object names
+	 * 
+	 * @throws java.rmi.RemoteException
+	 * @throws JvnException
+	 * **/
 	public List<String> getLookupNames() throws RemoteException, JvnException {
 		List<String> res = new ArrayList<>();
 		for(Entry<String,Integer> entry : name_objectid.entrySet()){

@@ -38,7 +38,7 @@ public interface JvnRemoteCoord extends Remote {
 	 * Associate a symbolic name with a JVN object
 	 * @param jon : the JVN object name
 	 * @param jo  : the JVN object 
-	 * @param joi : the JVN object identification
+	 * @param joi : the JVN object identifier
 	 * @param js  : the remote reference of the JVNServer
 	 * @throws java.rmi.RemoteException,JvnException
 	 **/
@@ -56,7 +56,7 @@ public interface JvnRemoteCoord extends Remote {
 
 	/**
 	 * Get a Read lock on a JVN object managed by a given JVN server 
-	 * @param joi : the JVN object identification
+	 * @param joi : the JVN object identifier
 	 * @param js  : the remote reference of the server
 	 * @return the current JVN object state
 	 * @throws java.rmi.RemoteException, JvnException
@@ -66,7 +66,7 @@ public interface JvnRemoteCoord extends Remote {
 
 	/**
 	 * Get a Write lock on a JVN object managed by a given JVN server 
-	 * @param joi : the JVN object identification
+	 * @param joi : the JVN object identifier
 	 * @param js  : the remote reference of the server
 	 * @return the current JVN object state
 	 * @throws java.rmi.RemoteException, JvnException
@@ -84,14 +84,29 @@ public interface JvnRemoteCoord extends Remote {
 	
 	/**
 	 * Remove a specific distributed object
-	 * @param joi : the JVN object identification
+	 * @param joi : the JVN object identifier
 	 * @throws java.rmi.RemoteException 
 	 * @throws JvnException
 	 */
 	public void jvnRemoveObject(int joi) throws java.rmi.RemoteException, JvnException;
-
-	public Serializable recharge(JvnRemoteServer js, Integer id) throws JvnException,
+	
+	/** 
+	 * Get the shared object from the coordinator
+	 * 
+	 * @js the server asking the object
+	 * @id the shared object identifier 
+	 * @return the shared object state
+	 */
+	public Serializable jvnGetSharedObject(JvnRemoteServer js, Integer id) throws JvnException,
 			RemoteException;
+	
+	/** Get the Names of all shared objects 
+	 *
+	 * @return a list of shared object names
+	 * 
+	 * @throws java.rmi.RemoteException
+	 * @throws JvnException
+	 * **/
 	public List<String> getLookupNames() throws RemoteException, JvnException;
 
 }

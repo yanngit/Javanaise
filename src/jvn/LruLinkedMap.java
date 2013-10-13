@@ -10,20 +10,32 @@ public class LruLinkedMap<K, V extends JvnObject> extends
 	private static final long serialVersionUID = 1L;
 	private int max;
 
+	/**
+	 * Default constructor of the LRU list
+	 * @param max
+	 */
 	public LruLinkedMap(int max) {
 		super(10 * max, 1.0f, true);
 		this.max = max;
 	}
 
 	@Override
+	/**
+	 * Add an element at the top of the list
+	 */
 	public V put(K k, V v) {
 		if (cachesize() >= max) {
-			System.out.println(cachesize() + " objects dans le cache");
-			eldest().jvnRemoveSer();
+			eldest().jvnUnloadObject();
 		}
 		return super.put(k, v);
 	}
 
+	/**
+	 * Return the number of the shared objects in the list
+	 * 
+	 * @return nb
+	 * 			  the number of objects in the list
+	 */
 	public int cachesize() {
 		int nb = 0;
 		for (V v : this.values()) {
@@ -32,10 +44,14 @@ public class LruLinkedMap<K, V extends JvnObject> extends
 		return nb;
 	}
 
+	/**
+	 * Return the last element of the list
+	 * 
+	 * @return last element of the list
+	 */
 	public V eldest() {
 		for (V v : this.values()) {
 			if (v.jvnIsCached()) {
-				System.out.println( v+ " décharge dans le cache");
 				return v;
 			}
 		}

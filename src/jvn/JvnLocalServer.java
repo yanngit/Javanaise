@@ -7,6 +7,7 @@
 
 package jvn;
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * Local interface of a JVN server  (used by the applications).
@@ -46,7 +47,7 @@ public interface JvnLocalServer {
 
 	/**
 	 * Get a Read lock on a JVN object 
-	 * @param joi : the JVN object identification
+	 * @param joi : the JVN object identifier
 	 * @return the current JVN object state
 	 * @throws  JvnException
 	 **/
@@ -55,7 +56,7 @@ public interface JvnLocalServer {
 
 	/**
 	 * Get a Write lock on a JVN object 
-	 * @param joi : the JVN object identification
+	 * @param joi : the JVN object identifier
 	 * @return the current JVN object state
 	 * @throws  JvnException
 	 **/
@@ -77,6 +78,14 @@ public interface JvnLocalServer {
 	 */
 	public void jvnRemoveObject(Object oj) throws JvnException;
 
+	/** Get the Names of all shared objects 
+	 *
+	 * @return a list of shared object names
+	 * 
+	 * @throws java.rmi.RemoteException
+	 * @throws JvnException
+	 * **/
+	public List<String> getLookupNames() throws JvnException;
 }
 
 

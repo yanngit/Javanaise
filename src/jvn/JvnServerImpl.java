@@ -146,7 +146,7 @@ JvnLocalServer, JvnRemoteServer {
 				proxy_intercepteur.put(obj, proxy);
 				return proxy;
 			}
-			return new JvnException("Aucun objet ne correspond à ce nom symbolique "+jon);
+			return null;//new JvnException("Aucun objet ne correspond à ce nom symbolique "+jon);
 		} catch (RemoteException e) {
 			throw new JvnException("Problème dans le LookupObject : "+e.getMessage());
 		}
@@ -156,7 +156,7 @@ JvnLocalServer, JvnRemoteServer {
 	 * Get a Read lock on a JVN object
 	 * 
 	 * @param joi
-	 *            : the JVN object identification
+	 *            : the JVN object identifier
 	 * @return the current JVN object state
 	 * @throws JvnException
 	 **/
@@ -179,7 +179,7 @@ JvnLocalServer, JvnRemoteServer {
 	 * Get a Write lock on a JVN object
 	 * 
 	 * @param joi
-	 *            : the JVN object identification
+	 *            : the JVN object identifier
 	 * @return the current JVN object state
 	 * @throws JvnException
 	 **/
@@ -239,22 +239,35 @@ JvnLocalServer, JvnRemoteServer {
 		return idobj_intercepteur.get(joi).jvnInvalidateWriterForReader();
 	}
 
+	/**
+	 * Get the identifier of the server
+	 * @return the server identifier
+	 */
 	public int jvnGetId() {
 		return id;
 	}
 
-	public Serializable recharge(int joi) throws JvnException{
-		System.out.println("rechager l'objet "+joi);
+	/**
+	 * 
+	 * @param joi
+	 * @return
+	 * @throws JvnException
+	 */
+	public Serializable jvnRecharge(int joi) throws JvnException{
 		try {
-			this.refresh(idobj_intercepteur.get(joi));
-			System.out.println("until here is good");
-			return coordinator.recharge(this, joi);
+			this.jvnRefresh(idobj_intercepteur.get(joi));
+			return coordinator.jvnGetSharedObject(this, joi);
 		} catch (RemoteException e) {
 			throw new JvnException("Problème dans le recharge : "+e.getMessage());
 		}
 	}
 
-	public void refresh(JvnObject jo) throws JvnException {
+	/**
+	 * 
+	 * @param jo
+	 * @throws JvnException
+	 */
+	public void jvnRefresh(JvnObject jo) throws JvnException {
 		this.idobj_intercepteur.get(jo.jvnGetObjectId());
 	}
 
@@ -284,7 +297,13 @@ JvnLocalServer, JvnRemoteServer {
 	}
 
 	@Override
-	public void broadcastDeletedObject(Integer integer) {
+	/**
+	 * Informing the server about a deleted object
+	 * @param integer the object identifier
+	 * @throws RemoteException
+	 * @throws JvnException
+	 */
+	public void jvnDeletedObjectInformation(Integer integer) {
 		JvnObject obj = idobj_intercepteur.get(integer);
 		/*Si l'objet était connu du serveur on le supprime sinon rien*/
 		if(obj != null){
@@ -293,6 +312,13 @@ JvnLocalServer, JvnRemoteServer {
 		}
 	}
 
+	/** Get the Names of all shared objects 
+	 *
+	 * @return a list of shared object names
+	 * 
+	 * @throws java.rmi.RemoteException
+	 * @throws JvnException
+	 * **/
 	public List<String> getLookupNames() throws JvnException {
 		try {
 			return coordinator.getLookupNames();

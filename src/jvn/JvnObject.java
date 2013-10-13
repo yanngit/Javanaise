@@ -40,7 +40,7 @@ public interface JvnObject extends Serializable {
 
 
 	/**
-	 * Get the object identification
+	 * Get the object identifier
 	 * @throws JvnException
 	 **/
 	public int jvnGetObjectId()
@@ -76,8 +76,19 @@ public interface JvnObject extends Serializable {
 	 * @throws JvnException
 	 **/
 	public Serializable jvnInvalidateWriterForReader()
-			throws jvn.JvnException;	
-	public void jvnRemoveSer();
+			throws jvn.JvnException;
+	
+	/** 
+	 * Unloading a shared object (to liberate a place in the cache)
+	 * 
+	 */
+	public void jvnUnloadObject();
+	
+	/**
+	 * Test if the shared object is cached
+	 * 
+	 * @return true if the shared object is cached, false otherwise
+	 */
 	public boolean jvnIsCached();
 
 	
