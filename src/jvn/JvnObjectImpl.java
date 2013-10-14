@@ -11,7 +11,30 @@ public class JvnObjectImpl implements JvnObject {
 	private Serializable obj = null;
 
 	public enum STATE_ENUM {
-		NL, R, W, RC, WC, RWC
+		/**
+		 * No lock
+		 */
+		NL, 
+		/**
+		 * Lock read
+		 */
+		R, 
+		/**
+		 * Lock write
+		 */
+		W, 
+		/**
+		 * Lock read cached
+		 */
+		RC, 
+		/**
+		 * Lock write cached
+		 */
+		WC, 
+		/**
+		 * Lock read taken and lock write cached
+		 */
+		RWC
 	};
 
 	private STATE_ENUM STATE = STATE_ENUM.NL;
@@ -247,7 +270,7 @@ public class JvnObjectImpl implements JvnObject {
 
 	/** Update the status of a given object
 	 * 
-	 * @ser:
+	 * @param ser
 	 * 		  The new state of a shared object
 	 * 
 	 * @throws JvnException

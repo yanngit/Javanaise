@@ -82,8 +82,6 @@ JvnRemoteCoord, JvnLocalCoord {
 	 *            : the JVN object name
 	 * @param jo
 	 *            : the JVN object
-	 * @param joi
-	 *            : the JVN object identifier
 	 * @param js
 	 *            : the remote reference of the JVNServer
 	 * @throws java.rmi.RemoteException
@@ -288,8 +286,8 @@ JvnRemoteCoord, JvnLocalCoord {
 	/** 
 	 * Get the shared object from the coordinator
 	 * 
-	 * @js the server asking the object
-	 * @id the shared object identifier 
+	 * @param js the server asking the object
+	 * @param id the shared object identifier 
 	 * @return the shared object state
 	 */
 	@Override

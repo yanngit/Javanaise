@@ -9,7 +9,7 @@ public class Main2 {
 		try {
 			MonObjetInterface jvnO = (MonObjetInterface)server.jvnLookupObject("objet1");
 			System.out.println(jvnO.getString());
-			Thread.sleep(5000);
+			Thread.sleep(8000);
 			System.out.println(jvnO.getString());
 			Thread.sleep(5000);
 			System.out.println(jvnO.getString());

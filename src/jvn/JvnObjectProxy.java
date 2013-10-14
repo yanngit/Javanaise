@@ -34,6 +34,7 @@ public class JvnObjectProxy implements java.lang.reflect.InvocationHandler {
 
 		result = m.invoke(ser, args);
 		if(locked){
+			Thread.sleep(1000);
 			obj.jvnUnLock();
 		}
 		return result;

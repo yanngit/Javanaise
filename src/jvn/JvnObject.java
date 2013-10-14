@@ -46,7 +46,15 @@ public interface JvnObject extends Serializable {
 	public int jvnGetObjectId()
 			throws jvn.JvnException; 
 
+	/** Update the status of a given object
+	 * 
+	 * @param ser
+	 * 		  The new state of a shared object
+	 * 
+	 * @throws JvnException
+	 */
 	public void jvnUpdateObjectState(Serializable ser) throws jvn.JvnException;
+	
 	/**
 	 * Get the object state
 	 * @throws JvnException

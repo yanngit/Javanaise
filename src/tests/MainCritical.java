@@ -26,12 +26,10 @@ public class MainCritical {
 					num_rand = (int) Math.round(Math.random());
 					switch(num_rand){
 					case 0 :
-						System.out.println("Writing operation");
 						obj.setString("lock by"+name);
 						System.out.println("Writing done");
 						break;
 					case 1 : 
-						System.out.println("Reading operation");
 						System.out.println("Actual value : "+obj.getString());
 						System.out.println("Read done");
 						break; 

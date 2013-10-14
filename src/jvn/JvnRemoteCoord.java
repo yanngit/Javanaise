@@ -38,7 +38,6 @@ public interface JvnRemoteCoord extends Remote {
 	 * Associate a symbolic name with a JVN object
 	 * @param jon : the JVN object name
 	 * @param jo  : the JVN object 
-	 * @param joi : the JVN object identifier
 	 * @param js  : the remote reference of the JVNServer
 	 * @throws java.rmi.RemoteException,JvnException
 	 **/
@@ -93,8 +92,8 @@ public interface JvnRemoteCoord extends Remote {
 	/** 
 	 * Get the shared object from the coordinator
 	 * 
-	 * @js the server asking the object
-	 * @id the shared object identifier 
+	 * @param js the server asking the object
+	 * @param id the shared object identifier 
 	 * @return the shared object state
 	 */
 	public Serializable jvnGetSharedObject(JvnRemoteServer js, Integer id) throws JvnException,

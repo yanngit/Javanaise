@@ -14,7 +14,7 @@ public class Main {
 			MonObjetInterface mon_objet_partage = new MonObjet("State de creation");
 			MonObjetInterface jvnO = (MonObjetInterface)server.jvnCreateObject(mon_objet_partage);
 			server.jvnRegisterObject("objet1", jvnO);
-			Thread.sleep(5000);
+			Thread.sleep(8000);
 			System.out.println(jvnO.getString());
 			jvnO.setString("coucou, main 1 j'ai tout modifié :)");
 			System.out.println(jvnO.getString());

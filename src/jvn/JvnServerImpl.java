@@ -202,7 +202,6 @@ JvnLocalServer, JvnRemoteServer {
 	 * 
 	 * @param joi
 	 *            : the JVN object id
-	 * @return void
 	 * @throws java.rmi.RemoteException
 	 *             ,JvnException
 	 **/
@@ -248,9 +247,9 @@ JvnLocalServer, JvnRemoteServer {
 	}
 
 	/**
-	 * 
-	 * @param joi
-	 * @return
+	 * Restore a shared object unloaded
+	 * @param joi the object identifier
+	 * @return the shared object state
 	 * @throws JvnException
 	 */
 	public Serializable jvnRecharge(int joi) throws JvnException{
@@ -263,8 +262,8 @@ JvnLocalServer, JvnRemoteServer {
 	}
 
 	/**
-	 * 
-	 * @param jo
+	 * Notify the use of a shared object 
+	 * @param jo the object identifier
 	 * @throws JvnException
 	 */
 	public void jvnRefresh(JvnObject jo) throws JvnException {
@@ -273,7 +272,7 @@ JvnLocalServer, JvnRemoteServer {
 
 	/**
 	 * Remove an object from the Jvn system (created and registered before)
-	 * @param oj : the object to remove
+	 * @param jo : the object to remove
 	 * @throws JvnException
 	 */
 	public void jvnRemoveObject(Object jo) throws JvnException{
